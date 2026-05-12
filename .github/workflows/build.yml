@@ -1,0 +1,59 @@
+name: Build Baiyun Kernel Ace3Pro
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source
+        uses: actions/checkout@v4
+        with:
+          # 自动拉取你当前的白云内核源码
+          repository: ${{ github.repository }}
+          fetch-depth: 0
+
+      - name: Setup Environment
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bc build-essential flex bison libssl-dev libelf-dev clang lld llvm libncurses-dev
+
+      - name: Download Toolchain
+        run: |
+          mkdir toolchain
+          cd toolchain
+          # 使用谷歌官方针对安卓 14/15 优化的 Clang 编译器
+          wget https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/main/clang-r522817.tar.gz
+          tar -xf clang-r522817.tar.gz
+
+      - name: Compile Kernel
+        run: |
+          # 1. 设置环境变量
+          export PATH=$(pwd)/toolchain/bin:$PATH
+          CLANG_DIR=$(pwd)/toolchain
+          
+          # 2. 进入源码目录
+          cd common
+          
+          # 3. 选定配置（这里会读取你刚才修改的 gki_defconfig）
+          make O=out ARCH=arm64 gki_defconfig
+          
+          # 4. 开始炼丹（全力全开多核编译）
+          make -j$(nproc) O=out ARCH=arm64 \
+            CC=clang \
+            CLANG_TRIPLE=aarch64-linux-gnu- \
+            CROSS_COMPILE=aarch64-linux-android- \
+            NM=llvm-nm \
+            OBJCOPY=llvm-objcopy \
+            OBJDUMP=llvm-objdump \
+            STRIP=llvm-strip \
+            LLVM=1 \
+            LLVM_IAS=1
+
+      - name: Pack and Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: Baiyun-Kernel-Ace3Pro-Image
+          # 编译出的核心文件路径
+          path: common/out/arch/arm64/boot/Image
+

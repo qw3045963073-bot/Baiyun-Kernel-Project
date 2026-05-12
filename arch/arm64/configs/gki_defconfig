@@ -748,3 +748,23 @@ CONFIG_KUNIT_DEBUGFS=y
 CONFIG_TCP_CONG_ADVANCED=y
 CONFIG_TCP_CONG_BBR=y
 CONFIG_DEFAULT_TCP_CONG="bbr"
+# --- Baiyun Kernel Power Optimization ---
+# 开启功耗感知调度 (EAS)，让系统更聪明地分配任务
+CONFIG_ENERGY_MODEL=y
+CONFIG_WQ_POWER_EFFICIENT_DEFAULT=y
+
+# 启用 TEO (Thermal Extension Optimized) 调度器
+# 它是目前针对移动端最先进的空闲状态预测算法
+CONFIG_CPU_IDLE_GOV_TEO=y
+
+# 强制开启 Schedutil 调速器并将其设为默认
+# 相比 Performance，它能根据负载动态压低频率，极度省电
+CONFIG_CPU_FREQ_GOV_SCHEDUTIL=y
+CONFIG_CPU_FREQ_DEFAULT_GOV_SCHEDUTIL=y
+
+# 精简内核：关闭冗余的调试日志和性能分析工具 (减少 CPU 0.2W 左右的后台开销)
+# CONFIG_FTRACE is not set
+# CONFIG_KPROBES is not set
+# CONFIG_UPROBES is not set
+# CONFIG_RUNTIME_TESTING_MENU is not set
+# CONFIG_KUNIT is not set

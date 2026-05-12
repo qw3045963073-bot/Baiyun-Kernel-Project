@@ -99,7 +99,7 @@
 #include <trace/hooks/dtask.h>
 #include <trace/hooks/cgroup.h>
 
-//#include "../locking/locking_main.h"
+#include "../locking/locking_main.h"
 
 /*
  * Export tracepoints that act as a bare tracehook (ie: have no trace event
